@@ -1,280 +1,428 @@
-/* ပင်မစတိုင်များ */
+/* main.css - WAYNE AI Main Stylesheet */
+
+/* Base Styles */
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --text-color: #333;
-    --light-bg: #f5f5f5;
-    --dark-bg: #0a0a1a;
-    --user-message-bg: #e3f2fd;
-    --ai-message-bg: #f1f1f1;
-    --shadow: 0 0 10px rgba(0,0,0,0.1);
+  --primary: #3498db;
+  --primary-dark: #2980b9;
+  --primary-light: #e1f0fa;
+  --secondary: #2c3e50;
+  --secondary-light: #34495e;
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --light: #ecf0f1;
+  --dark: #2c3e50;
+  --gray: #95a5a6;
+  --white: #ffffff;
+  --text: #333333;
+  --text-light: #7f8c8d;
+  
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  
+  --transition: all 0.3s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Padauk', 'Myanmar Text', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: var(--light-bg);
-    color: var(--text-color);
-    line-height: 1.6;
-    transition: all 0.3s ease;
+  font-family: 'Padauk', sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  background-color: var(--light);
+  min-height: 100vh;
 }
 
-body.dark-mode {
-    background-color: var(--dark-bg);
-    color: #fff;
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
 }
 
-/* ချက်အိုင်တီ ကွန်တိန်နာ */
+h1 { font-size: 2rem; }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.1rem; }
+h6 { font-size: 1rem; }
+
+p {
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Layout */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 1rem; }
+.gap-4 { gap: 1.5rem; }
+.gap-5 { gap: 2rem; }
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  font-family: 'Padauk', sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--white);
+}
+
+.btn-secondary:hover {
+  background-color: var(--secondary-light);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-light);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: var(--radius-md);
+  font-family: 'Padauk', sans-serif;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Chat Specific Styles */
 .chat-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: white;
-    box-shadow: var(--shadow);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 100%;
+  background-color: var(--white);
+  box-shadow: var(--shadow-lg);
 }
 
-.dark-mode .chat-container {
-    background-color: #1a1a2e;
-    color: #fff;
-}
-
-/* ခေါင်းစီး */
 .chat-header {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+  background-color: var(--secondary);
+  color: var(--white);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
 }
 
-.chat-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.chat-header nav a {
-    color: white;
-    margin-left: 15px;
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-.chat-header nav a:hover {
-    background-color: rgba(255,255,255,0.2);
-}
-
-/* ချက်ကိုယ်ထည် */
 .chat-body {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background-color: inherit;
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-/* မက်ဆေ့ချ်များ */
 .message {
-    margin-bottom: 15px;
-    padding: 12px 15px;
-    border-radius: 18px;
-    max-width: 80%;
-    position: relative;
-    line-height: 1.8;
-    font-size: 1.1rem;
-    animation: fadeIn 0.3s ease;
+  max-width: 80%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  line-height: 1.5;
+  position: relative;
+  animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.user-message {
-    background-color: var(--user-message-bg);
-    margin-left: auto;
-    border-bottom-right-radius: 5px;
-}
-
-.dark-mode .user-message {
-    background-color: #2c3e50;
-    color: #fff;
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .ai-message {
-    background-color: var(--ai-message-bg);
-    margin-right: auto;
-    border-bottom-left-radius: 5px;
+  background-color: var(--white);
+  border: 1px solid #ddd;
+  align-self: flex-start;
+  border-bottom-left-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
 }
 
-.dark-mode .ai-message {
-    background-color: #34495e;
-    color: #fff;
+.user-message {
+  background-color: var(--primary);
+  color: var(--white);
+  align-self: flex-end;
+  border-bottom-right-radius: var(--radius-sm);
 }
 
 .message-time {
-    display: block;
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 5px;
-    text-align: right;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  margin-top: 0.25rem;
+  text-align: right;
 }
 
-.dark-mode .message-time {
-    color: #aaa;
-}
-
-/* ချက်အင်ပါ့ */
 .chat-input {
-    display: flex;
-    padding: 15px;
-    border-top: 1px solid #eee;
-    background-color: inherit;
-}
-
-.dark-mode .chat-input {
-    border-top: 1px solid #444;
+  display: flex;
+  padding: 1rem;
+  background-color: var(--white);
+  border-top: 1px solid #eee;
+  gap: 0.5rem;
 }
 
 .chat-input input {
-    flex: 1;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    outline: none;
-    font-family: 'Padauk', 'Myanmar Text', sans-serif;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.dark-mode .chat-input input {
-    background-color: #2c3e50;
-    color: #fff;
-    border-color: #444;
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: var(--radius-full);
+  font-family: 'Padauk', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: var(--transition);
 }
 
 .chat-input input:focus {
-    border-color: var(--secondary-color);
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+  border-color: var(--primary);
 }
 
 .chat-input button {
-    margin-left: 10px;
-    padding: 12px 20px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-family: 'Padauk', 'Myanmar Text', sans-serif;
-    transition: all 0.3s ease;
+  padding: 0 1.5rem;
+  background-color: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: 'Padauk', sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
 .chat-input button:hover {
-    background-color: #1a252f;
-    transform: translateY(-2px);
+  background-color: var(--primary-dark);
 }
 
-/* တိုးတက်မှုဘား */
-.progress-container {
-    width: 100%;
-    height: 4px;
-    background-color: #f1f1f1;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: var(--secondary-color);
-    width: 0%;
-    transition: width 0.3s ease;
-}
-
-/* တုံ့ပြန်မှုအခြေအနေ */
+/* Typing Indicator */
 .typing-indicator {
-    display: inline-block;
-    padding: 10px 15px;
-    background-color: var(--ai-message-bg);
-    border-radius: 18px;
-    margin-bottom: 15px;
+  display: none;
+  align-self: flex-start;
+  padding: 0.75rem 1rem;
+  background-color: var(--white);
+  border-radius: 1rem;
+  border-bottom-left-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.25rem;
 }
 
-.dark-mode .typing-indicator {
-    background-color: #34495e;
+.typing-dots {
+  display: flex;
+  gap: 0.25rem;
 }
 
 .typing-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background-color: #666;
-    border-radius: 50%;
-    margin-right: 4px;
-    animation: typingAnimation 1.4s infinite ease-in-out;
-}
-
-.dark-mode .typing-dot {
-    background-color: #aaa;
-}
-
-.typing-dot:nth-child(1) {
-    animation-delay: 0s;
-}
-
-.typing-dot:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dot:nth-child(3) {
-    animation-delay: 0.4s;
+  width: 8px;
+  height: 8px;
+  background-color: var(--text-light);
+  border-radius: 50%;
+  animation: typingAnimation 1.4s infinite ease-in-out;
 }
 
 @keyframes typingAnimation {
-    0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-5px); }
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
 }
 
-/* မိုဘိုင်းအတွက် တုံ့ပြန်မှု */
-@media (max-width: 600px) {
-    .chat-container {
-        max-width: 100%;
-        border-radius: 0;
-    }
-    
-    .chat-header {
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-    }
-    
-    .chat-header nav {
-        margin-top: 10px;
-    }
-    
-    .message {
-        max-width: 90%;
-        font-size: 1rem;
-        padding: 10px 12px;
-    }
-    
-    .chat-input {
-        padding: 10px;
-    }
-    
-    .chat-input input {
-        padding: 10px 12px;
-    }
-    
-    .chat-input button {
-        padding: 10px 15px;
-    }
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Suggestions */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.suggestion-chip {
+  padding: 0.5rem 1rem;
+  background-color: var(--white);
+  border: 1px solid #ddd;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.suggestion-chip:hover {
+  background-color: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 2rem; }
+
+.hidden { display: none; }
+.w-full { width: 100%; }
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--secondary);
+    color: var(--light);
+  }
+  
+  .chat-container {
+    background-color: var(--secondary-light);
+  }
+  
+  .chat-body {
+    background-color: var(--secondary);
+  }
+  
+  .ai-message {
+    background-color: var(--secondary-light);
+    border-color: var(--secondary);
+    color: var(--light);
+  }
+  
+  .chat-input {
+    background-color: var(--secondary-light);
+    border-top-color: var(--secondary);
+  }
+  
+  .chat-input input {
+    background-color: var(--secondary);
+    border-color: var(--secondary-light);
+    color: var(--light);
+  }
+  
+  .typing-indicator,
+  .suggestion-chip {
+    background-color: var(--secondary-light);
+    border-color: var(--secondary);
+    color: var(--light);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .chat-container {
+    height: 100vh;
+    max-width: 100%;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+  
+  .chat-header {
+    padding: 0.75rem;
+  }
+  
+  .chat-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .chat-header nav a {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+  }
     }
