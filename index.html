@@ -2,24 +2,95 @@
 <html>
 <head>
     <title>WAYNE AI - Loading</title>
-    <meta http-equiv="refresh" content="2; url='src/pages/main.html'">
+    <meta http-equiv="refresh" content="5; url='src/pages/main.html'">
     <style>
-        .loader {
-            border: 16px solid #f3f3f3;
-            border-top: 16px solid #3498db;
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
-            margin: 100px auto;
+        body {
+            background-color: #0a0a1a;
+            overflow: hidden;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Arial', sans-serif;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        .loading-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+        
+        .dragon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23FF5722" d="M19,8L15,12H18C18,15.31 15.31,18 12,18C11,18 10.03,17.75 9.2,17.3L7.74,18.76C8.97,19.54 10.43,20 12,20C16.42,20 20,16.42 20,12H23M6,12C6,8.69 8.69,6 12,6C13,6 13.97,6.25 14.8,6.7L16.26,5.24C15.03,4.46 13.57,4 12,4C7.58,4 4,7.58 4,12H1L5,16L9,12M14,12C14,13.1 13.1,14 12,14C10.9,14 10,13.1 10,12C10,10.9 10.9,10 12,10C13.1,10 14,10.9 14,12Z"/></svg>');
+            background-size: contain;
+            animation: orbit 3s linear infinite;
+        }
+        
+        .wayne-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ffff;
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            opacity: 0;
+            animation: fadeIn 1s ease-in 3s forwards;
+        }
+        
+        @keyframes orbit {
+            0% {
+                transform: rotate(0deg) translateX(120px) rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg) translateX(120px) rotate(-360deg);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .subtext {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 1rem;
+            opacity: 0;
+            animation: fadeIn 1s ease-in 4s forwards;
         }
     </style>
 </head>
 <body>
-    <div class="loader"></div>
+    <div class="loading-container">
+        <div class="dragon"></div>
+        <div class="wayne-text">WAYNE</div>
+        <div class="subtext">AI Power System</div>
+    </div>
+    
+    <script>
+        // Add some random smaller dragons
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.loading-container');
+            for (let i = 0; i < 5; i++) {
+                const smallDragon = document.createElement('div');
+                smallDragon.className = 'dragon';
+                smallDragon.style.width = (20 + Math.random() * 20) + 'px';
+                smallDragon.style.height = smallDragon.style.width;
+                smallDragon.style.animation = `orbit ${4 + Math.random() * 3}s linear infinite`;
+                smallDragon.style.animationDelay = `${Math.random() * 2}s`;
+                smallDragon.style.opacity = 0.6;
+                container.appendChild(smallDragon);
+            }
+        });
+    </script>
 </body>
 </html>
