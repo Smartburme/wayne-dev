@@ -1,82 +1,74 @@
-# WAYNE AI Project Documentation
+# WAYNE AI - မြန်မာ AI အကူအညီ
 
-## 📌 `README.md`
+![WAYNE AI Logo](./src/assets/image/admin.png)
 
-```markdown
-# WAYNE AI - Myanmar Language AI Assistant
+WAYNE AI သည် မြန်မာဘာသာစကားဖြင့် အထောက်အကူဖြစ်စေမည့် AI Chat Assistant ဖြစ်ပါသည်။
 
-![WAYNE AI Logo](src/assets/icon.png)
+## အင်္ဂါရပ်များ
 
-WAYNE AI is a Myanmar-language focused AI assistant powered by Cloudflare Workers AI and Llama 3.1 8B model.
+- 💬 မြန်မာဘာသာဖြင့် စကားပြောနိုင်သော AI
+- 🌙 Light/Dark Mode အပြောင်းအလဲ
+- 📚 စကားပြောမှတ်တမ်းများ သိမ်းဆည်းခြင်း
+- 🔍 အကြံပြုချက်များနှင့် အလိုအလျောက်ဖြည့်စွက်ခြင်း
+- 🎙 အသံဖြင့် အသုံးပြုနိုင်မည့် စနစ်
+- 📱 Mobile & Desktop နှစ်မျိုးလုံး အဆင်ပြေစွာ အသုံးပြုနိုင်ခြင်း
 
-## 🌟 Features
+## အသုံးပြုနည်း
 
-- 💬 Myanmar language chat interface
-- 🚀 Powered by Cloudflare Workers AI
-- 🌙 Dark/Light mode toggle
-- 🔊 Text-to-speech functionality
-- ⚙️ Customizable settings
+1. **စတင်အသုံးပြုရန်**
+   ```bash
+   git clone https://github.com/your-repo/wayne-ai.git
+   cd wayne-ai
+   npm install
+   npm start
+   ```
 
-## 🔧 Installation
+2. **Web Version အသုံးပြုရန်**
+   - [https://wayne-ai-web.app](https://wayne-ai-web.app) တွင် အခမဲ့ အသုံးပြုနိုင်ပါသည်
 
-1. Clone the repository:
-```bash
-git clone https://github.com/Smartburme/wayne-dev.git
+3. **Mobile App**
+   - Google Play Store နှင့် Apple App Store တွင် ရရှိနိုင်ပါသည်
+
+## Developer များအတွက်
+
+### Project Structure
+```
+wayne-ai/
+├── src/
+│   ├── assets/          # Images, fonts, styles
+│   ├── components/      # UI components
+│   ├── pages/           # Application pages
+│   ├── services/        # API services
+│   └── utils/           # Utility functions
+├── public/              # Static files
+└── package.json         # Project dependencies
 ```
 
-2. Deploy to Cloudflare Workers:
-```bash
-npm install -g wrangler
-wrangler deploy
-```
+### Technologies Used
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Framework**: None (Vanilla JS)
+- **Styling**: CSS Variables for theming
+- **Font**: Google's Padauk for Burmese support
 
-3. Configure environment variables in `wrangler.toml`
+## ပံ့ပိုးကူညီရန်
 
-## 🌐 Live Demo
+ဤစီမံကိန်းကို ပံ့ပိုးကူညီလိုပါက -
+1. Fork this repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-- Web Interface: [GitHub Pages](https://smartburme.github.io/wayne-dev)
-- API Endpoint: [https://morning-cell-1282.mysvm.workers.dev](https://morning-cell-1282.mysvm.workers.dev)
+## လိုင်စင်
 
-## 🏗️ Project Structure
+MIT License - See [LICENSE](./LICENSE) for details.
 
-```
-wayne-dev/
-├── index.html
-├── worker.js
-├── LICENSE
-├── README.md
-└── src/
-    ├── pages/
-    │   ├── main.html
-    │   ├── setting.html
-    │   └── about.html
-    └── assets/
-        ├── css/
-        │   └── main.css
-        ├── js/
-        │   └── main.js
-        └── icon.png
-```
+## ဆက်သွယ်ရန်
 
-## 📜 License
+- Email: [support@wayne-ai.com](mailto:support@wayne-ai.com)
+- Website: [https://wayne-ai.com](https://wayne-ai.com)
+- Facebook Page: [WayneAI](https://facebook.com/WayneAI)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---
 
-## 📂 Project Files Summary
-
-1. **`README.md`** - Contains:
-   - Project description and features
-   - Installation instructions
-   - Live demo links
-   - Project structure
-   - License information
-   - Contribution guidelines
-
-2. **`LICENSE`** - MIT License file granting permission for use, modification, and distribution
-
-3. **Key Links**:
-   - **Live Worker API**: [https://morning-cell-1282.mysvm.workers.dev](https://morning-cell-1282.mysvm.workers.dev)
-   - **GitHub Repository**: [github.com/Smartburme/wayne-dev](https://github.com/Smartburme/wayne-dev)
-   - **Project Icon**: `src/assets/icon.png`
-
-This documentation provides clear guidance for users and developers while maintaining proper licensing information for your open-source project.
+© 2023 WAYNE AI Team. All rights reserved.
