@@ -7,24 +7,39 @@
     <link rel="stylesheet" href="../../src/assets/css/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="../../src/assets/image/icon.png" type="image/png">
 </head>
 <body>
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="../../src/assets/image/icon.png" alt="WAYNE AI Logo" class="sidebar-logo">
+            <h2>WAYNE AI</h2>
+        </div>
+        
         <button class="sidebar-toggle" id="sidebarToggle">
             <i class="fas fa-bars"></i>
         </button>
+        
         <div class="sidebar-content">
             <button class="new-chat-btn" id="newChatBtn">
                 <i class="fas fa-plus"></i> New Chat
             </button>
+            
             <div class="history-container">
                 <h3>Chat History</h3>
                 <ul class="history-list" id="historyList">
                     <!-- History items will be loaded here -->
                 </ul>
             </div>
+            
             <div class="sidebar-footer">
+                <a href="../../src/pages/settings.html" class="sidebar-nav-item">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="../../src/pages/about.html" class="sidebar-nav-item">
+                    <i class="fas fa-info-circle"></i> About
+                </a>
                 <button class="clear-history-btn" id="clearHistoryBtn">
                     <i class="fas fa-trash"></i> Clear History
                 </button>
@@ -75,4 +90,4 @@
 
     <script src="../../src/assets/js/main.js"></script>
 </body>
-    </html>
+</html>
