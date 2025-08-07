@@ -9,10 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
     progressContainer.appendChild(progressBar);
     document.body.insertBefore(progressContainer, document.body.firstChild);
 
-    // အချက်အလက်များကိုစစ်ဆေးခြင်း
+    // Cloudflare Worker API endpoint
+    const WORKER_API_URL = 'https://morning-cell-1282.mysvm.workers.dev/api/chat';
+
+    // Initialize settings
     checkSettings();
 
-    // မြန်မာဘာသာဖြင့် အချိန်ပြခြင်း
+    // Myanmar time formatting
     function getMyanmarTime() {
         const now = new Date();
         const options = { 
@@ -23,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return now.toLocaleTimeString('my-MM', options);
     }
 
-    // စာရိုက်နေသည့်အချက်ပြခြင်း
+    // Typing indicator functions
     function showTypingIndicator() {
         const typingDiv = document.createElement('div');
         typingDiv.className = 'typing-indicator';
@@ -31,13 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="typing-dot"></div>
             <div class="typing-dot"></div>
             <div class="typing-dot"></div>
+            <span>WAYNE AI စာရိုက်နေသည်...</span>
         `;
         typingDiv.id = 'typingIndicator';
         chatBody.appendChild(typingDiv);
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // စာရိုက်နေသည့်အချက်ဖျောက်ခြင်း
     function hideTypingIndicator() {
         const typingIndicator = document.getElementById('typingIndicator');
         if (typingIndicator) {
@@ -45,27 +48,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // မက်ဆေ့ချ်ပို့ခြင်း
+    // Message handling
     function sendMessage() {
         const message = userInput.value.trim();
         if (message) {
             addMessage('user', message, getMyanmarTime());
             userInput.value = '';
             
-            // တိုးတက်မှုဘားပြခြင်း
+            // Show progress
             progressBar.style.width = '30%';
-            
-            // AI မှအဖြေစောင့်ဆိုင်းခြင်း
             showTypingIndicator();
             
-            // AI မှအဖြေရယူခြင်း
+            // Get AI response
             getAIResponse(message)
                 .then(response => {
                     progressBar.style.width = '100%';
                     hideTypingIndicator();
                     addMessage('ai', response, getMyanmarTime());
                     
-                    // အသံဖြင့်ဖတ်ပြခြင်း (ရွေးချယ်ထားပါက)
+                    // Text-to-speech if enabled
                     if (localStorage.getItem('voiceResponse') === 'true') {
                         speakResponse(response);
                     }
@@ -78,12 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     progressBar.style.width = '0%';
                     hideTypingIndicator();
                     addMessage('ai', "တောင်းပန်ပါသည်။ အမှားတစ်ခုဖြစ်ပေါ်နေပါသည်။", getMyanmarTime());
-                    console.error('Error:', error);
+                    console.error('API Error:', error);
                 });
         }
     }
 
-    // မက်ဆေ့ချ်ထည့်ခြင်း
     function addMessage(sender, text, time) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // အသံဖြင့်ဖတ်ပြခြင်း
+    // Text-to-speech function
     function speakResponse(text) {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
@@ -112,28 +112,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // အချက်အလက်များကိုစစ်ဆေးခြင်း
+    // Settings management
     function checkSettings() {
-        // ဘာသာစကား
         if (!localStorage.getItem('language')) {
             localStorage.setItem('language', 'my');
         }
         
-        // အသံထွက်
         if (!localStorage.getItem('voiceResponse')) {
             localStorage.setItem('voiceResponse', 'false');
         }
         
-        // အသွင်အပြင်
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
         }
     }
 
-    // AI API နှင့်ချိတ်ဆက်ခြင်း
+    // API communication with Cloudflare Worker
     async function getAIResponse(prompt) {
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch(WORKER_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -145,28 +142,32 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`Server error: ${response.status}`);
             }
             
             const data = await response.json();
-            return data.response || "ကျေးဇူးပြု၍ နောက်မှထပ်မေးပါ။";
+            
+            if (!data.response) {
+                throw new Error('Invalid response format from API');
+            }
+            
+            return data.response;
         } catch (error) {
-            console.error('Error:', error);
+            console.error('API Request Failed:', error);
             throw error;
         }
     }
 
-    // Enter နှိပ်ပါက message ပို့ခြင်း
+    // Event listeners
     userInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             sendMessage();
         }
     });
     
-    // ပို့ရန်ခလုတ်ကိုနှိပ်ပါက
     sendButton.addEventListener('click', sendMessage);
 
-    // ပထမဆုံးမက်ဆေ့ချ်ကိုထည့်ခြင်း
+    // Initial greeting
     setTimeout(() => {
         addMessage('ai', "မင်္ဂလာပါ! WAYNE AI မှ ကြိုဆိုပါတယ်။ ကျွန်ုပ်ကို ဘာတွေ မေးမြန်းချင်ပါသလဲ?", getMyanmarTime());
     }, 1000);
