@@ -7,34 +7,157 @@
     <link rel="stylesheet" href="../../src/assets/css/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Padauk&display=swap" rel="stylesheet">
     <style>
+        body {
+            font-family: 'Padauk', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .chat-header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .chat-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .chat-header nav a {
+            color: white;
+            text-decoration: none;
+            margin-top: 10px;
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #3498db;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .chat-header nav a:hover {
+            background-color: #2980b9;
+        }
+        
         .settings-container {
             max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 30px auto;
+            padding: 30px;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .setting-item {
-            margin-bottom: 20px;
-            padding-bottom: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 25px;
             border-bottom: 1px solid #eee;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
         
         .setting-item h3 {
             color: #2c3e50;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            font-family: 'Padauk', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            accent-color: #3498db;
+        }
+        
+        .checkbox-container label {
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        .theme-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .theme-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            font-family: 'Padauk', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .theme-buttons button:hover {
+            background-color: #d6eaf8;
+        }
+        
+        .theme-buttons button.active {
+            background-color: #3498db;
+            color: white;
         }
         
         .back-button {
             display: inline-block;
             margin-top: 20px;
-            padding: 8px 16px;
-            background-color: #2c3e50;
+            padding: 10px 20px;
+            background-color: #3498db;
             color: white;
             text-decoration: none;
             border-radius: 5px;
+            border: none;
+            font-family: 'Padauk', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+        
+        @media (max-width: 600px) {
+            .settings-container {
+                padding: 20px;
+                margin: 15px;
+            }
+            
+            .theme-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -52,27 +175,75 @@
             <select id="languageSelect">
                 <option value="my">မြန်မာ</option>
                 <option value="en">အင်္ဂလိပ်</option>
+                <option value="zh">တရုတ်</option>
+                <option value="th">ထိုင်း</option>
             </select>
+            <p style="margin-top: 8px; color: #7f8c8d; font-size: 0.9rem;">သင်နှစ်သက်ရာဘာသာစကားကို ရွေးချယ်နိုင်ပါသည်</p>
         </div>
         
         <div class="setting-item">
             <h3>အသံထွက်</h3>
-            <label>
-                <input type="checkbox" id="voiceResponse"> AI ၏အဖြေများကို အသံဖြင့်ဖတ်ပြရန်
-            </label>
+            <div class="checkbox-container">
+                <input type="checkbox" id="voiceResponse">
+                <label for="voiceResponse">AI ၏အဖြေများကို အသံဖြင့်ဖတ်ပြရန်</label>
+            </div>
+            <div class="checkbox-container" style="margin-top: 10px;">
+                <input type="checkbox" id="soundEffects">
+                <label for="soundEffects">အသံအကျအဆို (Sound Effects) များဖွင့်ရန်</label>
+            </div>
         </div>
         
         <div class="setting-item">
             <h3>အသွင်အပြင်</h3>
-            <div>
-                <button id="themeLight">အလင်းရောင်</button>
+            <div class="theme-buttons">
+                <button id="themeLight" class="active">အလင်းရောင်</button>
                 <button id="themeDark">အမှောင်ရောင်</button>
+                <button id="themeSystem">စက်စနစ်အတိုင်း</button>
+            </div>
+            <p style="margin-top: 8px; color: #7f8c8d; font-size: 0.9rem;">အင်တာဖေ့စ်၏ အရောင်အသွေးအပြင်အဆင်ကို ပြောင်းလဲနိုင်ပါသည်</p>
+        </div>
+        
+        <div class="setting-item">
+            <h3>အခြားရွေးချယ်စရာများ</h3>
+            <div class="checkbox-container">
+                <input type="checkbox" id="saveHistory">
+                <label for="saveHistory">စကားပြောမှတ်တမ်းများကို သိမ်းဆည်းရန်</label>
+            </div>
+            <div class="checkbox-container" style="margin-top: 10px;">
+                <input type="checkbox" id="notifications">
+                <label for="notifications">အသိပေးချက်များကို လက်ခံရန်</label>
             </div>
         </div>
         
-        <a href="main.html" class="back-button">ပြန်သွားရန်</a>
+        <button class="back-button">ပြန်သွားရန်</button>
     </div>
     
     <script src="../../src/assets/js/settings.js"></script>
+    <script>
+        // Basic theme switching functionality
+        document.getElementById('themeLight').addEventListener('click', function() {
+            document.body.classList.remove('dark-theme');
+            document.body.classList.add('light-theme');
+            updateButtonStates('themeLight');
+        });
+        
+        document.getElementById('themeDark').addEventListener('click', function() {
+            document.body.classList.remove('light-theme');
+            document.body.classList.add('dark-theme');
+            updateButtonStates('themeDark');
+        });
+        
+        document.getElementById('themeSystem').addEventListener('click', function() {
+            document.body.classList.remove('light-theme', 'dark-theme');
+            updateButtonStates('themeSystem');
+        });
+        
+        function updateButtonStates(activeId) {
+            document.querySelectorAll('.theme-buttons button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(activeId).classList.add('active');
+        }
+    </script>
 </body>
 </html>
