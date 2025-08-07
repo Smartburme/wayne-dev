@@ -1,27 +1,17 @@
 export default {
   async fetch(request, env) {
-    // Set CORS headers
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    };
-
-    // Handle OPTIONS preflight request
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-
-    // Process API requests
-    if (request.url.endsWith('/api/chat') && request.method === 'POST') {
+    const url = new URL(request.url);
+    
+    // API endpoint for chat
+    if (url.pathname === '/api/chat' && request.method === 'POST') {
       try {
         const { prompt, language } = await request.json();
         
-        // Add language context to prompt
-        const fullPrompt = language === 'my' 
-          ? `မြန်မာဘာသာဖြင့်ဖြေပါ။ ${prompt}`
-          : prompt;
-
+        // Add Myanmar language context if needed
+        const fullPrompt = language === 'my' ? 
+          `မြန်မာဘာသာဖြင့်ဖြေပါ။ ${prompt}` : 
+          prompt;
+        
         const response = await env.WAYNE_API_KEY.run(
           "@cf/meta/llama-3.1-8b-instruct",
           {
@@ -34,26 +24,21 @@ export default {
           response: response.response || response 
         }), {
           headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
           }
         });
       } catch (error) {
-        console.error('Worker Error:', error);
         return new Response(JSON.stringify({ 
-          error: "AI service unavailable",
-          details: error.message 
+          error: "AI ဝန်ဆောင်မှုယာယီရပ်နားထားသည်" 
         }), { 
           status: 500,
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
-          }
+          headers: { 'Content-Type': 'application/json' }
         });
       }
     }
-
-    // Serve frontend files
-    return fetch('https://smartburme.github.io/wayne-dev' + new URL(request.url).pathname);
+    
+    // Serve static files
+    return env.ASSETS.fetch(request);
   }
 }
