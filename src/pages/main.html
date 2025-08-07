@@ -1,24 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="my">
 <head>
-    <title>WAYNE AI - Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAYNE AI - အဓိက စာမျက်နှာ</title>
     <link rel="stylesheet" href="../../src/assets/css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Padauk&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
             <h1>WAYNE AI</h1>
             <nav>
-                <a href="setting.html">Settings</a>
-                <a href="about.html">About</a>
+                <a href="setting.html">အချက်အလက်များ</a>
+                <a href="about.html">အကြောင်းအရာ</a>
             </nav>
         </div>
         <div class="chat-body" id="chatBody">
-            <!-- Messages will appear here -->
+            <div class="message ai-message">
+                မင်္ဂလာပါ! WAYNE AI မှ ကြိုဆိုပါတယ်။ ကျွန်ုပ်ကို ဘာတွေ မေးမြန်းချင်ပါသလဲ?
+            </div>
         </div>
         <div class="chat-input">
-            <input type="text" id="userInput" placeholder="Ask me anything...">
-            <button id="sendButton">Send</button>
+            <input type="text" id="userInput" placeholder="သင့်မေးခွန်းကို ရိုက်ထည့်ပါ...">
+            <button id="sendButton">ပို့ရန်</button>
         </div>
     </div>
     <script src="../../src/assets/js/main.js"></script>
