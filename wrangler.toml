@@ -1,0 +1,13 @@
+name = "morning-cell-1282"
+compatibility_date = "2025-08-07"
+main = "worker.js"
+
+[ai]
+binding = "WAYNE_API_KEY"
+
+[vars]
+API_BASE_URL = "https://morning-cell-1282.mysvm.workers.dev"
+
+[build]
+command = ""
+upload.format = "service-worker"
