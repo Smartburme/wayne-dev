@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAYNE AI - အချက်အလက်များ</title>
+    <link rel="stylesheet" href="../../src/assets/css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Padauk&display=swap" rel="stylesheet">
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .setting-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .setting-item h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #2c3e50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <h1>WAYNE AI အချက်အလက်များ</h1>
+        <nav>
+            <a href="main.html">ပြန်သွားရန်</a>
+        </nav>
+    </div>
+    
+    <div class="settings-container">
+        <div class="setting-item">
+            <h3>ဘာသာစကား</h3>
+            <select id="languageSelect">
+                <option value="my">မြန်မာ</option>
+                <option value="en">အင်္ဂလိပ်</option>
+            </select>
+        </div>
+        
+        <div class="setting-item">
+            <h3>အသံထွက်</h3>
+            <label>
+                <input type="checkbox" id="voiceResponse"> AI ၏အဖြေများကို အသံဖြင့်ဖတ်ပြရန်
+            </label>
+        </div>
+        
+        <div class="setting-item">
+            <h3>အသွင်အပြင်</h3>
+            <div>
+                <button id="themeLight">အလင်းရောင်</button>
+                <button id="themeDark">အမှောင်ရောင်</button>
+            </div>
+        </div>
+        
+        <a href="main.html" class="back-button">ပြန်သွားရန်</a>
+    </div>
+    
+    <script src="../../src/assets/js/settings.js"></script>
+</body>
+</html>
