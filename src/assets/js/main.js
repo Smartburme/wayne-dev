@@ -1,18 +1,20 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
-    const chatBody = document.getElementById('chatBody');
-    const userInput = document.getElementById('userInput');
-    const sendButton = document.getElementById('sendButton');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const newChatBtn = document.getElementById('newChatBtn');
-    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-    const historyList = document.getElementById('historyList');
-    const themeToggle = document.getElementById('themeToggle');
-    const voiceToggle = document.getElementById('voiceToggle');
-    const suggestions = document.getElementById('suggestions');
-    const progressBar = document.querySelector('.progress-bar');
-    
+    const elements = {
+        chatBody: document.getElementById('chatBody'),
+        userInput: document.getElementById('userInput'),
+        sendButton: document.getElementById('sendButton'),
+        sidebar: document.getElementById('sidebar'),
+        sidebarToggle: document.getElementById('sidebarToggle'),
+        newChatBtn: document.getElementById('newChatBtn'),
+        clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+        historyList: document.getElementById('historyList'),
+        themeToggle: document.getElementById('themeToggle'),
+        voiceToggle: document.getElementById('voiceToggle'),
+        suggestions: document.getElementById('suggestions'),
+        progressBar: document.querySelector('.progress-bar')
+    };
+
     // Cloudflare Worker API Configuration
     const API_CONFIG = {
         endpoint: 'https://morning-cell-1282.mysvm.workers.dev/api/chat',
@@ -25,26 +27,31 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Application State
-    let currentChatId = generateChatId();
-    let isSidebarOpen = window.innerWidth > 768;
+    const state = {
+        currentChatId: generateChatId(),
+        isSidebarOpen: window.innerWidth > 768,
+        isWaitingForResponse: false,
+        speechSynthesis: window.speechSynthesis || null,
+        voices: []
+    };
 
     // Initialize the application
-    initApplication();
+    init();
 
-    function initApplication() {
+    function init() {
         setupEventListeners();
         checkSettings();
         loadChatHistory();
         updateSidebarState();
         sendInitialGreeting();
+        loadVoices();
     }
 
-    // Generate unique chat ID
+    // Utility Functions
     function generateChatId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
     }
 
-    // Myanmar time formatting
     function getMyanmarTime(date = new Date()) {
         const options = { 
             hour: '2-digit', 
@@ -57,79 +64,243 @@ document.addEventListener('DOMContentLoaded', function() {
                date.toLocaleTimeString('my-MM', {hour: '2-digit', minute: '2-digit', hour12: true});
     }
 
-    // Sidebar functions
+    // Sidebar Functions
     function updateSidebarState() {
         if (window.innerWidth <= 768) {
-            sidebar.classList.toggle('active', isSidebarOpen);
+            elements.sidebar.classList.toggle('active', state.isSidebarOpen);
         } else {
-            sidebar.classList.add('active');
-            isSidebarOpen = true;
+            elements.sidebar.classList.add('active');
+            state.isSidebarOpen = true;
         }
     }
 
     function toggleSidebar() {
-        isSidebarOpen = !isSidebarOpen;
+        state.isSidebarOpen = !state.isSidebarOpen;
         updateSidebarState();
     }
 
-    // Message handling
-    function sendMessage() {
-        const message = userInput.value.trim();
+    // Message Handling
+    async function sendMessage() {
+        if (state.isWaitingForResponse) return;
+        
+        const message = elements.userInput.value.trim();
         if (!message) return;
 
-        addMessage('user', message, getMyanmarTime());
-        userInput.value = '';
+        addMessage('user', message);
+        elements.userInput.value = '';
         
+        state.isWaitingForResponse = true;
         showLoadingState();
         showTypingIndicator();
         
-        getAIResponse(message)
-            .then(response => {
-                hideTypingIndicator();
-                addMessage('ai', response, getMyanmarTime());
-                
-                if (shouldUseTTS()) {
-                    speakResponse(response);
-                }
-                
-                updateChatHistory();
-                hideLoadingState();
-            })
-            .catch(error => {
-                hideTypingIndicator();
-                handleError(error);
-                hideLoadingState();
-            });
+        try {
+            const response = await getAIResponse(message);
+            addMessage('ai', response);
+            
+            if (shouldUseTTS()) {
+                speakResponse(response);
+            }
+        } catch (error) {
+            handleError(error);
+        } finally {
+            hideTypingIndicator();
+            hideLoadingState();
+            state.isWaitingForResponse = false;
+            updateChatHistory();
+        }
     }
 
-    function addMessage(sender, text, time) {
+    function addMessage(sender, text) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}-message`;
         
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-        messageContent.innerHTML = parseSimpleMarkdown(text);
+        messageDiv.innerHTML = `
+            <div class="message-content">${parseSimpleMarkdown(text)}</div>
+            <span class="message-time">${getMyanmarTime()}</span>
+        `;
         
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'message-time';
-        timeSpan.textContent = time;
-        
-        messageDiv.appendChild(messageContent);
-        messageDiv.appendChild(timeSpan);
-        chatBody.appendChild(messageDiv);
-        
-        saveMessageToHistory(sender, text, new Date());
+        elements.chatBody.appendChild(messageDiv);
+        saveMessageToHistory(sender, text);
         scrollToBottom();
     }
 
-    // Loading states
+    // API Communication
+    async function getAIResponse(prompt) {
+        let lastError;
+        
+        for (let i = 0; i < API_CONFIG.retries; i++) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
+                
+                const response = await fetch(API_CONFIG.endpoint, {
+                    method: 'POST',
+                    headers: API_CONFIG.headers,
+                    body: JSON.stringify({ 
+                        prompt,
+                        language: localStorage.getItem('language') || 'my',
+                        chatId: state.currentChatId
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data?.response) {
+                    throw new Error('Invalid response format from API');
+                }
+                
+                return data.response;
+            } catch (error) {
+                lastError = error;
+                if (i < API_CONFIG.retries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                }
+            }
+        }
+        
+        throw lastError;
+    }
+
+    // History Management
+    function loadChatHistory() {
+        const history = JSON.parse(localStorage.getItem('wayneAI_chatHistory')) || {};
+        
+        elements.historyList.innerHTML = '';
+        
+        Object.keys(history)
+            .sort((a, b) => history[b].lastUpdated - history[a].lastUpdated)
+            .forEach(chatId => {
+                const chat = history[chatId];
+                const historyItem = document.createElement('li');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <i class="fas fa-comment"></i>
+                    <span>${chat.preview || 'New Chat'}</span>
+                `;
+                historyItem.addEventListener('click', () => loadChat(chatId));
+                elements.historyList.appendChild(historyItem);
+            });
+    }
+
+    function saveMessageToHistory(sender, text) {
+        const history = JSON.parse(localStorage.getItem('wayneAI_chatHistory')) || {};
+        const timestamp = new Date();
+        
+        if (!history[state.currentChatId]) {
+            history[state.currentChatId] = {
+                messages: [],
+                preview: text.length > 30 ? text.substring(0, 30) + '...' : text,
+                lastUpdated: timestamp.getTime()
+            };
+        }
+        
+        history[state.currentChatId].messages.push({ 
+            sender, 
+            text, 
+            timestamp: timestamp.getTime() 
+        });
+        history[state.currentChatId].lastUpdated = timestamp.getTime();
+        
+        localStorage.setItem('wayneAI_chatHistory', JSON.stringify(history));
+    }
+
+    function loadChat(chatId) {
+        state.currentChatId = chatId;
+        const history = JSON.parse(localStorage.getItem('wayneAI_chatHistory')) || {};
+        const chat = history[chatId];
+        
+        elements.chatBody.innerHTML = '';
+        
+        if (chat?.messages) {
+            chat.messages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.sender}-message`;
+                messageDiv.innerHTML = `
+                    <div class="message-content">${parseSimpleMarkdown(msg.text)}</div>
+                    <span class="message-time">${getMyanmarTime(new Date(msg.timestamp))}</span>
+                `;
+                elements.chatBody.appendChild(messageDiv);
+            });
+        }
+        
+        scrollToBottom();
+        if (window.innerWidth <= 768) toggleSidebar();
+    }
+
+    function clearHistory() {
+        if (confirm(getLocalizedMessage('clearHistoryConfirm'))) {
+            localStorage.removeItem('wayneAI_chatHistory');
+            state.currentChatId = generateChatId();
+            elements.chatBody.innerHTML = '';
+            loadChatHistory();
+            sendInitialGreeting();
+        }
+    }
+
+    function startNewChat() {
+        state.currentChatId = generateChatId();
+        elements.chatBody.innerHTML = '';
+        sendInitialGreeting();
+        if (window.innerWidth <= 768) toggleSidebar();
+    }
+
+    // Text-to-Speech Functions
+    function loadVoices() {
+        if (!state.speechSynthesis) return;
+        
+        state.speechSynthesis.onvoiceschanged = () => {
+            state.voices = state.speechSynthesis.getVoices();
+        };
+        
+        // Some browsers load voices asynchronously
+        const checkVoices = setInterval(() => {
+            const voices = state.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                state.voices = voices;
+                clearInterval(checkVoices);
+            }
+        }, 100);
+    }
+
+    function speakResponse(text) {
+        if (!state.speechSynthesis) return;
+        
+        state.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = getVoiceLanguage();
+        utterance.rate = 0.9;
+        
+        const preferredVoice = state.voices.find(voice => 
+            voice.lang === utterance.lang && voice.name.includes('Female'));
+        
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+        
+        state.speechSynthesis.speak(utterance);
+    }
+
+    function getVoiceLanguage() {
+        const lang = localStorage.getItem('language') || 'my';
+        return lang === 'en' ? 'en-US' : 'my-MM';
+    }
+
+    // UI Helpers
     function showLoadingState() {
-        progressBar.style.width = '30%';
+        elements.progressBar.style.width = '30%';
     }
 
     function hideLoadingState() {
-        progressBar.style.width = '100%';
-        setTimeout(() => progressBar.style.width = '0%', 500);
+        elements.progressBar.style.width = '100%';
+        setTimeout(() => elements.progressBar.style.width = '0%', 500);
     }
 
     function showTypingIndicator() {
@@ -142,9 +313,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
             </div>
-            <span>WAYNE AI စာရိုက်နေသည်...</span>
+            <span>${getLocalizedMessage('typingIndicator')}</span>
         `;
-        chatBody.appendChild(typingDiv);
+        elements.chatBody.appendChild(typingDiv);
         scrollToBottom();
     }
 
@@ -153,154 +324,25 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typingIndicator) typingIndicator.remove();
     }
 
-    // API Communication
-    async function getAIResponse(prompt) {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
-            
-            const response = await fetch(API_CONFIG.endpoint, {
-                method: 'POST',
-                headers: API_CONFIG.headers,
-                body: JSON.stringify({ 
-                    prompt: prompt,
-                    language: localStorage.getItem('language') || 'my',
-                    chatId: currentChatId
-                }),
-                signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            if (!data?.response) {
-                throw new Error('Invalid response format from API');
-            }
-            
-            return data.response;
-        } catch (error) {
-            console.error('API Error:', error);
-            throw error;
-        }
+    function scrollToBottom() {
+        elements.chatBody.scrollTop = elements.chatBody.scrollHeight;
     }
 
-    // History management
-    function loadChatHistory() {
-        const history = JSON.parse(localStorage.getItem('wayneAI_chatHistory')) || {};
-        
-        historyList.innerHTML = '';
-        
-        Object.keys(history).sort((a, b) => history[b].lastUpdated - history[a].lastUpdated)
-            .forEach(chatId => {
-                const chat = history[chatId];
-                const historyItem = document.createElement('li');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <i class="fas fa-comment"></i>
-                    <span>${chat.preview || 'New Chat'}</span>
-                `;
-                historyItem.addEventListener('click', () => loadChat(chatId));
-                historyList.appendChild(historyItem);
-            });
+    function parseSimpleMarkdown(text) {
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+            .replace(/\n/g, '<br>');
     }
 
-    function saveMessageToHistory(sender, text, timestamp) {
-        const history = JSON.parse(localStorage.getItem('wayneAI_chatHistory')) || {};
-        
-        if (!history[currentChatId]) {
-            history[currentChatId] = {
-                messages: [],
-                preview: text.length > 30 ? text.substring(0, 30) + '...' : text,
-                lastUpdated: timestamp.getTime()
-            };
-        }
-        
-        history[currentChatId].messages.push({ sender, text, timestamp: timestamp.getTime() });
-        history[currentChatId].lastUpdated = timestamp.getTime();
-        
-        localStorage.setItem('wayneAI_chatHistory', JSON.stringify(history));
-    }
-
-    function updateChatHistory() {
-        loadChatHistory();
-    }
-
-    function loadChat(chatId) {
-        currentChatId = chatId;
-        const history = JSON.parse(localStorage.getItem('wayneAI_chatHistory')) || {};
-        const chat = history[chatId];
-        
-        chatBody.innerHTML = '';
-        
-        if (chat && chat.messages) {
-            chat.messages.forEach(msg => {
-                const time = new Date(msg.timestamp);
-                addMessage(msg.sender, msg.text, getMyanmarTime(time));
-            });
-        }
-        
-        if (window.innerWidth <= 768) {
-            toggleSidebar();
-        }
-    }
-
-    function clearHistory() {
-        if (confirm('Are you sure you want to clear all chat history?')) {
-            localStorage.removeItem('wayneAI_chatHistory');
-            currentChatId = generateChatId();
-            chatBody.innerHTML = '';
-            loadChatHistory();
-            sendInitialGreeting();
-        }
-    }
-
-    function startNewChat() {
-        currentChatId = generateChatId();
-        chatBody.innerHTML = '';
-        sendInitialGreeting();
-        
-        if (window.innerWidth <= 768) {
-            toggleSidebar();
-        }
-    }
-
-    // Text-to-speech
-    function speakResponse(text) {
-        if (!('speechSynthesis' in window)) return;
-        
-        window.speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = getVoiceLanguage();
-        utterance.rate = 0.9;
-        
-        const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(voice => 
-            voice.lang === utterance.lang && voice.name.includes('Female'));
-        
-        if (preferredVoice) {
-            utterance.voice = preferredVoice;
-        }
-        
-        window.speechSynthesis.speak(utterance);
-    }
-
-    function getVoiceLanguage() {
-        const lang = localStorage.getItem('language') || 'my';
-        return lang === 'en' ? 'en-US' : 'my-MM';
-    }
-
-    // Settings management
+    // Settings Management
     function checkSettings() {
         const defaults = {
             language: 'my',
             voiceResponse: 'false',
-            theme: 'light'
+            theme: 'light',
+            saveHistory: 'true'
         };
         
         Object.entries(defaults).forEach(([key, value]) => {
@@ -317,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const theme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', theme);
         document.body.classList.toggle('dark-mode', theme === 'dark');
-        themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        elements.themeToggle.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
     }
 
     function toggleTheme() {
@@ -334,56 +376,65 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateVoiceToggle() {
         const isVoiceOn = localStorage.getItem('voiceResponse') === 'true';
-        voiceToggle.innerHTML = isVoiceOn ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
-        voiceToggle.title = isVoiceOn ? 'Turn off voice' : 'Turn on voice';
+        elements.voiceToggle.innerHTML = isVoiceOn ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>';
+        elements.voiceToggle.title = isVoiceOn ? 
+            getLocalizedMessage('turnOffVoice') : 
+            getLocalizedMessage('turnOnVoice');
     }
 
     function shouldUseTTS() {
-        return localStorage.getItem('voiceResponse') === 'true' && 
-               'speechSynthesis' in window;
+        return localStorage.getItem('voiceResponse') === 'true' && state.speechSynthesis;
     }
 
-    // Helper functions
-    function parseSimpleMarkdown(text) {
-        return text
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
-            .replace(/\n/g, '<br>');
+    // Localization
+    function getLocalizedMessage(key) {
+        const messages = {
+            typingIndicator: {
+                my: 'WAYNE AI စာရိုက်နေသည်...',
+                en: 'WAYNE AI is typing...'
+            },
+            turnOnVoice: {
+                my: 'အသံဖွင့်ရန်',
+                en: 'Turn on voice'
+            },
+            turnOffVoice: {
+                my: 'အသံပိတ်ရန်',
+                en: 'Turn off voice'
+            },
+            clearHistoryConfirm: {
+                my: 'စာရင်းအားလုံးကို ဖျက်မှာသေချာပါသလား?',
+                en: 'Are you sure you want to clear all history?'
+            },
+            initialGreeting: {
+                my: 'မင်္ဂလာပါ! WAYNE AI မှ ကြိုဆိုပါတယ်။ ကျွန်ုပ်ကို ဘာတွေ မေးမြန်းချင်ပါသလဲ?',
+                en: 'Hello! Welcome to WAYNE AI. How can I assist you today?'
+            },
+            apiError: {
+                my: 'တောင်းပန်ပါသည်။ အမှားတစ်ခုဖြစ်ပေါ်နေပါသည်။ နောက်မှပြန်ကြိုးစားပါ။',
+                en: 'Sorry, an error occurred. Please try again later.'
+            }
+        };
+        
+        const lang = localStorage.getItem('language') || 'my';
+        return messages[key]?.[lang] || messages[key]?.en || key;
     }
 
-    function scrollToBottom() {
-        chatBody.scrollTop = chatBody.scrollHeight;
+    function sendInitialGreeting() {
+        setTimeout(() => {
+            addMessage('ai', getLocalizedMessage('initialGreeting'));
+        }, 500);
     }
 
     function handleError(error) {
         console.error('Error:', error);
-        const errorMessages = {
-            my: "တောင်းပန်ပါသည်။ အမှားတစ်ခုဖြစ်ပေါ်နေပါသည်။ နောက်မှပြန်ကြိုးစားပါ။",
-            en: "Sorry, an error occurred. Please try again later."
-        };
-        
-        const lang = localStorage.getItem('language') || 'my';
-        addMessage('ai', errorMessages[lang], getMyanmarTime());
+        addMessage('ai', getLocalizedMessage('apiError'));
     }
 
-    function sendInitialGreeting() {
-        const greetings = {
-            my: "မင်္ဂလာပါ! WAYNE AI မှ ကြိုဆိုပါတယ်။ ကျွန်ုပ်ကို ဘာတွေ မေးမြန်းချင်ပါသလဲ?",
-            en: "Hello! Welcome to WAYNE AI. How can I assist you today?"
-        };
-        
-        const lang = localStorage.getItem('language') || 'my';
-        setTimeout(() => {
-            addMessage('ai', greetings[lang], getMyanmarTime());
-        }, 500);
-    }
-
-    // Event listeners setup
+    // Event Listeners
     function setupEventListeners() {
         // Message sending
-        sendButton.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', (e) => {
+        elements.sendButton.addEventListener('click', sendMessage);
+        elements.userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
@@ -391,35 +442,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Sidebar controls
-        sidebarToggle.addEventListener('click', toggleSidebar);
-        newChatBtn.addEventListener('click', startNewChat);
-        clearHistoryBtn.addEventListener('click', clearHistory);
+        elements.sidebarToggle.addEventListener('click', toggleSidebar);
+        elements.newChatBtn.addEventListener('click', startNewChat);
+        elements.clearHistoryBtn.addEventListener('click', clearHistory);
         
         // Settings toggles
-        themeToggle.addEventListener('click', toggleTheme);
-        voiceToggle.addEventListener('click', toggleVoice);
+        elements.themeToggle.addEventListener('click', toggleTheme);
+        elements.voiceToggle.addEventListener('click', toggleVoice);
         
         // Suggestion chips
         document.querySelectorAll('.suggestion-chip').forEach(chip => {
             chip.addEventListener('click', () => {
-                userInput.value = chip.textContent;
-                userInput.focus();
+                elements.userInput.value = chip.textContent;
+                elements.userInput.focus();
             });
         });
         
-        // Initialize speech synthesis voices
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                // Voices loaded
-            };
-        }
-        
         // Window resize handler
         window.addEventListener('resize', () => {
+            state.isSidebarOpen = window.innerWidth > 768;
             updateSidebarState();
         });
         
         // Focus input on load
-        userInput.focus();
+        elements.userInput.focus();
     }
 });
